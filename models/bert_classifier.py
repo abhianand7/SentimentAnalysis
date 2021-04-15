@@ -67,7 +67,7 @@ class ClassifierPipeline:
         mod_input = outputs['pooled_output']
 
         dropout_1 = Dropout(0.2)(mod_input)
-        final_out = Dense(self.num_classes, activation=None)(dropout_1)
+        final_out = Dense(self.num_classes, activation='softmax')(dropout_1)
 
         model = Model(inputs=[input_1], outputs=[final_out])
 

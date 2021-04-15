@@ -84,7 +84,7 @@ class TrainPipeline:
                                                   num_warmup_steps=num_warmup_steps,
                                                   optimizer_type='adamw')
 
-        loss = CategoricalCrossentropy(from_logits=True)
+        loss = CategoricalCrossentropy(from_logits=False)
         metrics = []
         acc_metrics = tf.metrics.Accuracy()
         metrics.append(acc_metrics)
