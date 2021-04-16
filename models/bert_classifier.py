@@ -68,7 +68,7 @@ class ClassifierPipeline:
 
         dropout_1 = Dropout(0.1)(mod_input)
         dense_1 = Dense(
-            unit=64,
+            units=64,
             activation='relu'
         )(dropout_1)
         dropout_2 = Dropout(0.1)(dense_1)
