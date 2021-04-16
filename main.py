@@ -140,7 +140,7 @@ class TrainPipeline:
         return self.model_save_path
 
     @staticmethod
-    def get_optimizer(self, optimizer: str, learning_rate: float, **kwargs):
+    def get_optimizer(optimizer: str, learning_rate: float, **kwargs):
         if optimizer == 'adam':
             optimizer = Adam(learning_rate=learning_rate)
         elif optimizer == 'adamw':
@@ -263,7 +263,7 @@ if __name__ == '__main__':
 
     epochs_no = args.epochs
     batch_size_var = args.batch_size
-    optimizer = args.optimizer
+    optimizer_var = args.optimizer
     bert_model_name_var = args.bert_model
 
     train_utils = TrainPipeline(
@@ -277,7 +277,7 @@ if __name__ == '__main__':
         verbose=True,
         run_dir='runs',
         batch_size=batch_size_var,
-        optimizer=optimizer
+        optimizer=optimizer_var
     )
     trained_model_path = train_utils.run()
 
