@@ -63,7 +63,7 @@ class TrainPipeline:
             seed=seed
         )
 
-        train_ds, test_ds, val_ds = data_utils.create_data_pipeline()
+        train_ds, test_ds = data_utils.create_data_pipeline()
 
         model_utils = bert_classifier.ClassifierPipeline(
             bert_model_name=self.bert_model_name,
@@ -103,7 +103,7 @@ class TrainPipeline:
 
         history = bert_model.fit(
             x=train_ds,
-            validation_data=val_ds,
+            validation_split=0.2,
             epochs=self.epochs
         )
 

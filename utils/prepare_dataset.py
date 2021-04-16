@@ -39,19 +39,12 @@ class DataIngestion:
 
         train_dataset = dataset.take(int(no_train_elements * 0.70))
 
-        test_val_dataset = dataset.skip(int(no_train_elements * 0.70))
-
-        remaining_ds_size = no_train_elements - int(no_train_elements * 0.70)
-
-        test_dataset = test_val_dataset.take(int(remaining_ds_size * 0.66))
-
-        val_dataset = test_val_dataset.skip(int(remaining_ds_size * 0.65))
+        test_dataset = dataset.skip(int(no_train_elements * 0.70))
 
         train_dataset = train_dataset.cache().prefetch(buffer_size=self.AUTOTUNE)
         test_dataset = test_dataset.cache().prefetch(buffer_size=self.AUTOTUNE)
-        val_dataset = val_dataset.cache().prefetch(buffer_size=self.AUTOTUNE)
 
-        return train_dataset, test_dataset, val_dataset
+        return train_dataset, test_dataset
 
 
 if __name__ == '__main__':
