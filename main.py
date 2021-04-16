@@ -78,28 +78,28 @@ class TrainPipeline:
         with strategy.scope():
             bert_model = model_utils.build_cls_model()
 
-        steps_per_epoch = tf.data.experimental.cardinality(train_ds).numpy()
-        num_train_steps = steps_per_epoch * self.epochs
-        num_warmup_steps = int(0.1 * num_train_steps)
+            steps_per_epoch = tf.data.experimental.cardinality(train_ds).numpy()
+            num_train_steps = steps_per_epoch * self.epochs
+            num_warmup_steps = int(0.1 * num_train_steps)
 
-        init_lr = 0.001
-        optimizer = optimization.create_optimizer(init_lr=init_lr,
-                                                  num_train_steps=num_train_steps,
-                                                  num_warmup_steps=num_warmup_steps,
-                                                  optimizer_type='adamw')
+            init_lr = 0.001
+            optimizer = optimization.create_optimizer(init_lr=init_lr,
+                                                      num_train_steps=num_train_steps,
+                                                      num_warmup_steps=num_warmup_steps,
+                                                      optimizer_type='adamw')
 
-        loss = CategoricalCrossentropy(from_logits=False)
-        metrics = []
-        acc_metrics = tf.metrics.Accuracy()
-        metrics.append(acc_metrics)
-        auc_metrics = tf.metrics.AUC()
-        metrics.append(auc_metrics)
+            loss = CategoricalCrossentropy(from_logits=False)
+            metrics = []
+            acc_metrics = tf.metrics.Accuracy()
+            metrics.append(acc_metrics)
+            auc_metrics = tf.metrics.AUC()
+            metrics.append(auc_metrics)
 
-        bert_model.compile(
-            optimizer=optimizer,
-            loss=loss,
-            metrics=metrics
-        )
+            bert_model.compile(
+                optimizer=optimizer,
+                loss=loss,
+                metrics=metrics
+            )
 
         history = bert_model.fit(
             x=train_ds,
