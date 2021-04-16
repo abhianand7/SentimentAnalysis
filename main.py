@@ -219,9 +219,22 @@ class TestPipeline:
 
 
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('epochs', type=int)
+    parser.add_argument('batch_size', type=int)
+    parser.add_argument('optimizer', type=str)
+
+    args = parser.parse_args()
+
+    epochs_no = args.epochs
+    batch_size_var = args.epochs
+    optimizer = args.optimizer
+
     train_utils = TrainPipeline(
         bert_model_name='bert_en_uncased_L-12_H-768_A-12',
-        epochs=2,
+        epochs=epochs_no,
         train_csv_data='dataset/train.csv',
         train_data_sep=',',
         input_col='Phrase',
@@ -229,8 +242,8 @@ if __name__ == '__main__':
         tf_hub_models_config='tf_hub_models.json',
         verbose=True,
         run_dir='runs',
-        batch_size=32,
-        optimizer='adam'
+        batch_size=batch_size_var,
+        optimizer=optimizer
     )
     trained_model_path = train_utils.run()
 
