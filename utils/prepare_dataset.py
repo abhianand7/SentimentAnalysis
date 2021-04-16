@@ -37,15 +37,18 @@ class DataIngestion:
 
         dataset = dataset.shuffle(buffer_size=no_train_elements, seed=self.seed)
 
-        dataset = dataset.batch(batch_size=self.batch_size)
+        # dataset = dataset.batch(batch_size=self.batch_size)
 
         train_dataset = dataset.take(int(no_train_elements * 0.70))
+        train_dataset = train_dataset.batch(self.batch_size)
 
         test_dataset = dataset.skip(int(no_train_elements * 0.70))
 
         val_dataset = test_dataset.skip(int(no_train_elements * 0.15))
+        val_dataset = val_dataset.batch(self.batch_size)
 
         test_dataset = test_dataset.take(int(no_train_elements * 0.15))
+        test_dataset = test_dataset.batch(self.batch_size)
         if self.verbose:
             print(f'Training dataset size: {tf.data.experimental.cardinality(train_dataset).numpy()}')
             print(f'Test dataset size: {tf.data.experimental.cardinality(test_dataset).numpy()}')
@@ -81,7 +84,8 @@ if __name__ == '__main__':
         input_col=input_col,
         target_col=target_col,
         seed=7,
-        verbose=True
+        verbose=True,
+        batch_size=32
     )
 
     train, test, val = data_obj.create_data_pipeline()
@@ -89,6 +93,13 @@ if __name__ == '__main__':
     print(train.take(1))
 
     for text_batch, label_batch in train.take(1):
+        for i in range(1):
+            print(f'Review: {text_batch.numpy()[i]}')
+            label = label_batch.numpy()[i]
+            print(label)
+            print(f'Label : {label} ({class_names[label]})')
+
+    for text_batch, label_batch in test.take(1):
         for i in range(1):
             print(f'Review: {text_batch.numpy()[i]}')
             label = label_batch.numpy()[i]
