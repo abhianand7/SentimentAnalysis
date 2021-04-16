@@ -225,7 +225,7 @@ if __name__ == '__main__':
     parser.add_argument('epochs', type=int)
     parser.add_argument('batch_size', type=int)
     parser.add_argument('optimizer', type=str)
-    parser.add_argument('bert_model', type=str)
+    parser.add_argument('--bert_model', type=str, default='bert_en_uncased_L-12_H-768_A-12')
 
     args = parser.parse_args()
 
@@ -235,7 +235,7 @@ if __name__ == '__main__':
     bert_model_name_var = args.bert_model
 
     train_utils = TrainPipeline(
-        bert_model_name='bert_en_uncased_L-12_H-768_A-12',
+        bert_model_name=bert_model_name_var,
         epochs=epochs_no,
         train_csv_data='dataset/train.csv',
         train_data_sep=',',
