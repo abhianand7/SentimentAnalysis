@@ -20,8 +20,8 @@ class ClassifierPipeline:
         self.map_name_to_handle = self.tf_hub_model_dict['map_name_to_handle']
         self.map_model_to_preprocess = self.tf_hub_model_dict['map_model_to_preprocess']
 
-        self.tf_hub_handle_encoder = self.map_name_to_handle[bert_model_name]
-        self.tf_hub_handle_preprocess = self.map_model_to_preprocess[bert_model_name]
+        self.tf_hub_handle_encoder = self.map_name_to_handle[self.bert_model_name]
+        self.tf_hub_handle_preprocess = self.map_model_to_preprocess[self.bert_model_name]
         self.verbose = verbose
 
         self.num_classes = num_classes
@@ -66,8 +66,13 @@ class ClassifierPipeline:
 
         mod_input = outputs['pooled_output']
 
-        dropout_1 = Dropout(0.2)(mod_input)
-        final_out = Dense(self.num_classes, activation='softmax')(dropout_1)
+        dropout_1 = Dropout(0.1)(mod_input)
+        dense_1 = Dense(
+            unit=64,
+            activation='relu'
+        )(dropout_1)
+        dropout_2 = Dropout(0.1)(dense_1)
+        final_out = Dense(self.num_classes, activation='softmax')(dropout_2)
 
         model = Model(inputs=[input_1], outputs=[final_out])
 
