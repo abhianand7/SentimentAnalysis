@@ -35,8 +35,9 @@ class CSVPipeline:
         else:
             raise TypeError(f'Incorrect type passed for input_col. '
                             f'\n expected list or str but received:{type(self.target_col)}')
-
-        self.df = self.df[[self.input_col, self.target_col]]
+        if self.verbose:
+            print(f'selected cols: {all_cols}')
+        self.df = self.df[all_cols]
         self.df.dropna(
             axis=0,
             inplace=True

@@ -27,6 +27,19 @@ class TrainPipeline:
                  tf_hub_models_config: str, verbose: bool, run_dir: str,
                  batch_size: int, optimizer: str
                  ):
+        """
+        :param bert_model_name: any transformer model name which is present in tf hub
+        :param epochs:
+        :param train_csv_data:
+        :param train_data_sep:
+        :param input_col: list of input cols
+        :param target_col:  list of output cols
+        :param tf_hub_models_config:
+        :param verbose:
+        :param run_dir: path for saving the model
+        :param batch_size:
+        :param optimizer: define which optimizer to use
+        """
         self.optimizer = optimizer
         self.batch_size = batch_size
         self.run_dir = run_dir
@@ -54,9 +67,9 @@ class TrainPipeline:
         )
         raw_df = csv_utils.return_df()
 
-        classes = csv_utils.get_class_names()
-        classes_len = len(classes)
-        print(classes_len)
+        # classes = csv_utils.get_class_names()
+        # classes_len = len(classes)
+        # print(classes_len)
 
         # raw_df[self.target_col] = to_categorical(raw_df[self.target_col], num_classes=classes_len)
 
@@ -71,7 +84,7 @@ class TrainPipeline:
             batch_size=self.batch_size
         )
 
-        train_ds, test_ds, val_ds = data_utils.create_data_pipeline()
+        train_ds, test_ds, val_ds, classes_len = data_utils.create_data_pipeline()
 
         model_utils = bert_classifier.ClassifierPipeline(
             bert_model_name=self.bert_model_name,
@@ -80,6 +93,7 @@ class TrainPipeline:
             num_classes=classes_len
         )
 
+        # create strategy for multi-gpu training
         strategy = tf.distribute.MirroredStrategy()
         if self.verbose:
             print(f'Number of devices: {strategy.num_replicas_in_sync}')
@@ -95,6 +109,7 @@ class TrainPipeline:
             if self.optimizer == 'adam':
                 optimizer = self.get_optimizer(optimizer=self.optimizer, learning_rate=init_lr)
             elif self.optimizer == 'adamw':
+                # AdamW is a better version of Adam with dynamic weight decay
                 optimizer = self.get_optimizer(optimizer=self.optimizer,
                                                learning_rate=init_lr,
                                                num_train_steps=num_train_steps,
@@ -125,22 +140,31 @@ class TrainPipeline:
             callbacks=callbacks
         )
 
+        # save trained model
         bert_model.save(self.model_save_path, include_optimizer=False)
 
+        # plot graph
         try:
             self._plot_graph(history)
         except KeyError:
             errors = traceback.format_exc()
             print(errors)
 
+        # model evaluation on the test dataset
         evaluation_result = bert_model.evaluate(test_ds)
         print(evaluation_result)
-        # print(f'Loss: {loss}')
-        # print(f'Accuracy: {accuracy}')
         return self.model_save_path
 
     @staticmethod
     def get_optimizer(optimizer: str, learning_rate: float, **kwargs):
+        """
+
+        :param optimizer:
+        :param learning_rate:
+        :param kwargs: any additional argument which might be needed
+         two options includes: num_train_steps, num_warmup_steps for adamw optimizer
+        :return:
+        """
         if optimizer == 'adam':
             optimizer = Adam(learning_rate=learning_rate)
         elif optimizer == 'adamw':
@@ -213,6 +237,14 @@ class TrainPipeline:
 
 class TestPipeline:
     def __init__(self, model_path: str, test_file_path: str, test_sep: str, input_col: list, target_col: list):
+        """
+
+        :param model_path:
+        :param test_file_path:
+        :param test_sep:
+        :param input_col:
+        :param target_col:
+        """
         self.target_col = target_col
         self.input_col = input_col
         self.test_file_path = test_file_path
@@ -241,6 +273,13 @@ class TestPipeline:
 
     @staticmethod
     def _print_sample_predictions(inputs, results, sample_size):
+        """
+
+        :param inputs:
+        :param results:
+        :param sample_size:
+        :return:
+        """
         result_for_printing = \
             [f'input: {inputs[i]:<30} : score: {results[i][0]:.6f}'
              for i in range(sample_size)]
@@ -253,6 +292,7 @@ if __name__ == '__main__':
 
     default_bert_model = 'bert_en_uncased_L-12_H-768_A-12'
 
+    # enabling a way to pass arguments directly from terminal
     parser = argparse.ArgumentParser()
     parser.add_argument('epochs', type=int)
     parser.add_argument('batch_size', type=int)
@@ -266,6 +306,7 @@ if __name__ == '__main__':
     optimizer_var = args.optimizer
     bert_model_name_var = args.bert_model
 
+    # start training
     train_utils = TrainPipeline(
         bert_model_name=bert_model_name_var,
         epochs=epochs_no,
@@ -281,6 +322,9 @@ if __name__ == '__main__':
     )
     trained_model_path = train_utils.run()
 
+    # trained_model_path = 'runs/1618573162.0'
+
+    # start testing
     test_utils = TestPipeline(
         model_path=trained_model_path,
         test_file_path='dataset/test.csv',
@@ -288,4 +332,4 @@ if __name__ == '__main__':
         input_col=['Phrase'],
         target_col=[]
     )
-    pass
+    test_utils.run_test()
