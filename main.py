@@ -104,7 +104,8 @@ class TrainPipeline:
         history = bert_model.fit(
             x=train_ds,
             validation_data=val_ds,
-            epochs=self.epochs
+            epochs=self.epochs,
+            batch_size=64
         )
 
         bert_model.save(self.model_save_path, include_optimizer=False)
