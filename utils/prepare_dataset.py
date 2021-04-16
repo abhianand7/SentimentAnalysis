@@ -97,10 +97,10 @@ if __name__ == '__main__':
             print(f'Review: {text_batch.numpy()[i]}')
             label = label_batch.numpy()[i]
             print(label)
-            print(f'Label : {label} ({class_names[label]})')
+            # print(f'Label : {label} ({class_names[label]})')
 
     for text_batch, label_batch in test.take(1):
         for i in range(1):
             print(f'Review: {text_batch.numpy()[i]}')
             label = label_batch.numpy()[i]
-            print(f'Label : {label} ({class_names[label]})')
+            # print(f'Label : {label} ({class_names[label]})')

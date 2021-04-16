@@ -225,12 +225,14 @@ if __name__ == '__main__':
     parser.add_argument('epochs', type=int)
     parser.add_argument('batch_size', type=int)
     parser.add_argument('optimizer', type=str)
+    parser.add_argument('bert_model', type=str)
 
     args = parser.parse_args()
 
     epochs_no = args.epochs
-    batch_size_var = args.epochs
+    batch_size_var = args.batch_size
     optimizer = args.optimizer
+    bert_model_name_var = args.bert_model
 
     train_utils = TrainPipeline(
         bert_model_name='bert_en_uncased_L-12_H-768_A-12',
