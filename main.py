@@ -221,11 +221,13 @@ class TestPipeline:
 if __name__ == '__main__':
     import argparse
 
+    default_bert_model = 'bert_en_uncased_L-12_H-768_A-12'
+
     parser = argparse.ArgumentParser()
     parser.add_argument('epochs', type=int)
     parser.add_argument('batch_size', type=int)
     parser.add_argument('optimizer', type=str)
-    parser.add_argument('--bert_model', type=str, default='bert_en_uncased_L-12_H-768_A-12')
+    parser.add_argument('bert_model', type=str)
 
     args = parser.parse_args()
 
