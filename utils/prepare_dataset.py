@@ -15,7 +15,8 @@ tf.get_logger().setLevel('ERROR')
 class DataIngestion:
     def __init__(self, train_df: pd.DataFrame, test_df: Union[None, pd.DataFrame],
                  val_df: Union[None, pd.DataFrame], input_col: Union[list, str], target_col: Union[list, str],
-                 seed: Union[None, int]):
+                 seed: Union[None, int], verbose: bool):
+        self.verbose = verbose
         self.train_df = train_df
         self.test_df = test_df
         self.val_df = val_df
@@ -42,7 +43,12 @@ class DataIngestion:
         test_dataset = dataset.skip(int(no_train_elements * 0.70))
 
         val_dataset = test_dataset.skip(int(no_train_elements * 0.15))
+
         test_dataset = test_dataset.take(int(no_train_elements * 0.15))
+        if self.verbose:
+            print(f'Training dataset size: {tf.data.experimental.cardinality(train_dataset).numpy()}')
+            print(f'Test dataset size: {tf.data.experimental.cardinality(test_dataset).numpy()}')
+            print(f'Validation dataset size: {tf.data.experimental.cardinality(val_dataset).numpy()}')
 
         train_dataset = train_dataset.cache().prefetch(buffer_size=self.AUTOTUNE)
         test_dataset = test_dataset.cache().prefetch(buffer_size=self.AUTOTUNE)

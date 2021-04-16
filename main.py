@@ -60,7 +60,8 @@ class TrainPipeline:
             val_df=None,
             input_col=self.input_col,
             target_col=self.target_col,
-            seed=seed
+            seed=seed,
+            verbose=True
         )
 
         train_ds, test_ds, val_ds = data_utils.create_data_pipeline()
@@ -73,7 +74,8 @@ class TrainPipeline:
         )
 
         strategy = tf.distribute.MirroredStrategy()
-        print(f'Number of devices: {strategy.num_replicas_in_sync}')
+        if self.verbose:
+            print(f'Number of devices: {strategy.num_replicas_in_sync}')
 
         with strategy.scope():
             bert_model = model_utils.build_cls_model()
