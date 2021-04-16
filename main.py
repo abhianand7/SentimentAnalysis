@@ -4,6 +4,7 @@ import tensorflow_text
 import tensorflow_hub
 import tensorflow as tf
 from tensorflow.keras.losses import CategoricalCrossentropy
+from tensorflow.keras.optimizers import Adam
 from official.nlp import optimization
 from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
@@ -23,8 +24,9 @@ class TrainPipeline:
                  train_csv_data: str, train_data_sep: Union[None, str],
                  input_col: str, target_col: str,
                  tf_hub_models_config: str, verbose: bool, run_dir: str,
-                 batch_size: int
+                 batch_size: int, optimizer: str
                  ):
+        self.optimizer = optimizer
         self.batch_size = batch_size
         self.run_dir = run_dir
         self.input_col = input_col
@@ -89,11 +91,16 @@ class TrainPipeline:
             num_warmup_steps = int(0.1 * num_train_steps)
 
             init_lr = 0.001
-            optimizer = optimization.create_optimizer(init_lr=init_lr,
-                                                      num_train_steps=num_train_steps,
-                                                      num_warmup_steps=num_warmup_steps,
-                                                      optimizer_type='adamw')
-
+            if self.optimizer == 'adam':
+                optimizer = self.get_optimizer(optimizer=self.optimizer, learning_rate=init_lr)
+            elif self.optimizer == 'adamw':
+                optimizer = self.get_optimizer(optimizer=self.optimizer,
+                                               learning_rate=init_lr,
+                                               num_train_steps=num_train_steps,
+                                               num_warmup_steps=num_warmup_steps
+                                               )
+            else:
+                optimizer = 'adam'
             loss = CategoricalCrossentropy(from_logits=False)
             metrics = []
             acc_metrics = tf.metrics.Accuracy()
@@ -121,11 +128,23 @@ class TrainPipeline:
             errors = traceback.format_exc()
             print(errors)
 
-        loss, accuracy = bert_model.evaluate(test_ds)
-
-        print(f'Loss: {loss}')
-        print(f'Accuracy: {accuracy}')
+        evaluation_result = bert_model.evaluate(test_ds)
+        print(evaluation_result)
+        # print(f'Loss: {loss}')
+        # print(f'Accuracy: {accuracy}')
         return self.model_save_path
+
+    def get_optimizer(self, optimizer: str, learning_rate: float, **kwargs):
+        if optimizer == 'adam':
+            optimizer = Adam(learning_rate=learning_rate)
+        elif optimizer == 'adamw':
+            num_train_steps = kwargs['num_train_steps']
+            num_warmup_steps = kwargs['num_warmup_steps']
+            optimizer = optimization.create_optimizer(init_lr=learning_rate,
+                                                      num_train_steps=num_train_steps,
+                                                      num_warmup_steps=num_warmup_steps,
+                                                      optimizer_type='adamw')
+        return optimizer
 
     @staticmethod
     def _plot_graph(history):
@@ -210,7 +229,8 @@ if __name__ == '__main__':
         tf_hub_models_config='tf_hub_models.json',
         verbose=True,
         run_dir='runs',
-        batch_size=32
+        batch_size=32,
+        optimizer='adam'
     )
     trained_model_path = train_utils.run()
 
