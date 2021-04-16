@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 from typing import Union
+import typing
 
 
 class CSVPipeline:
@@ -18,8 +19,28 @@ class CSVPipeline:
 
     def return_df(self):
         self.df = pd.read_csv(self.file_path, sep=self.separator)
+        all_cols = list()
+
+        if isinstance(self.input_col, typing.List):
+            all_cols.extend(self.input_col)
+        elif isinstance(self.input_col, str):
+            all_cols.append(self.input_col)
+        else:
+            raise TypeError(f'Incorrect type passed for input_col. '
+                            f'\n expected list or str but received:{type(self.input_col)}')
+        if isinstance(self.target_col, typing.List):
+            all_cols.extend(self.target_col)
+        elif isinstance(self.target_col, str):
+            all_cols.append(self.target_col)
+        else:
+            raise TypeError(f'Incorrect type passed for input_col. '
+                            f'\n expected list or str but received:{type(self.target_col)}')
+
         self.df = self.df[[self.input_col, self.target_col]]
-        self.df.dropna()
+        self.df.dropna(
+            axis=0,
+            inplace=True
+        )
         if self.verbose:
             self.df.info()
         self.data_read_flag = True

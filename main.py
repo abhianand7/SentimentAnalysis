@@ -78,7 +78,7 @@ class TrainPipeline:
         num_train_steps = steps_per_epoch * self.epochs
         num_warmup_steps = int(0.1 * num_train_steps)
 
-        init_lr = 3e-5
+        init_lr = 0.001
         optimizer = optimization.create_optimizer(init_lr=init_lr,
                                                   num_train_steps=num_train_steps,
                                                   num_warmup_steps=num_warmup_steps,
@@ -105,11 +105,13 @@ class TrainPipeline:
 
         bert_model.save(self.model_save_path, include_optimizer=False)
 
+        self._plot_graph(history)
+
         loss, accuracy = bert_model.evaluate(test_ds)
 
         print(f'Loss: {loss}')
         print(f'Accuracy: {accuracy}')
-        self._plot_graph(history)
+        return self.model_save_path
 
     def _plot_graph(self, history):
         history_dict = history.history
@@ -142,6 +144,45 @@ class TrainPipeline:
         plt.ylabel('Accuracy')
         plt.legend(loc='lower right')
 
+        fig.savefig('full_fig.png')
+
+
+class TestPipeline:
+    def __init__(self, model_path: str, test_file_path: str, test_sep: str, input_col: list, target_col: list):
+        self.target_col = target_col
+        self.input_col = input_col
+        self.test_file_path = test_file_path
+        self.model_path = model_path
+        if not os.path.exists(self.model_path):
+            raise FileNotFoundError
+
+        self.model = tf.saved_model.load(self.model_path)
+        self.csv_utils = read_csv_data.CSVPipeline(
+            file_path=test_file_path,
+            verbose=True,
+            separator=test_sep,
+            input_col=self.input_col,
+            target_col=self.target_col
+        )
+
+    def run_test(self):
+        df = self.csv_utils.return_df()
+
+        raw_x_inputs = df[self.input_col].values
+        x_inputs = tf.constant(raw_x_inputs)
+        predictions = self.model(x_inputs)
+
+        self._print_sample_predictions(raw_x_inputs, predictions, 10)
+        return predictions
+
+    @staticmethod
+    def _print_sample_predictions(inputs, results, sample_size):
+        result_for_printing = \
+            [f'input: {inputs[i]:<30} : score: {results[i][0]:.6f}'
+             for i in range(sample_size)]
+        print(*result_for_printing, sep='\n')
+        print()
+
 
 if __name__ == '__main__':
     train_utils = TrainPipeline(
@@ -155,5 +196,13 @@ if __name__ == '__main__':
         verbose=True,
         run_dir='runs'
     )
-    train_utils.run()
+    trained_model_path = train_utils.run()
+
+    test_utils = TestPipeline(
+        model_path=trained_model_path,
+        test_file_path='dataset/test.csv',
+        test_sep=',',
+        input_col=['Phrase'],
+        target_col=[]
+    )
     pass
