@@ -15,7 +15,8 @@ tf.get_logger().setLevel('ERROR')
 class DataIngestion:
     def __init__(self, train_df: pd.DataFrame, test_df: Union[None, pd.DataFrame],
                  val_df: Union[None, pd.DataFrame], input_col: Union[list, str], target_col: Union[list, str],
-                 seed: Union[None, int], verbose: bool):
+                 seed: Union[None, int], verbose: bool, batch_size: int):
+        self.batch_size = batch_size
         self.verbose = verbose
         self.train_df = train_df
         self.test_df = test_df
@@ -36,7 +37,7 @@ class DataIngestion:
 
         dataset = dataset.shuffle(buffer_size=no_train_elements, seed=self.seed)
 
-        dataset = dataset.batch(batch_size=64)
+        dataset = dataset.batch(batch_size=self.batch_size)
 
         train_dataset = dataset.take(int(no_train_elements * 0.70))
 
@@ -79,7 +80,8 @@ if __name__ == '__main__':
         val_df=None,
         input_col=input_col,
         target_col=target_col,
-        seed=7
+        seed=7,
+        verbose=True
     )
 
     train, test, val = data_obj.create_data_pipeline()

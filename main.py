@@ -13,6 +13,7 @@ from models import bert_classifier
 from utils import prepare_dataset
 from utils import read_csv_data
 import time
+import traceback
 
 seed = 67
 
@@ -21,8 +22,10 @@ class TrainPipeline:
     def __init__(self, bert_model_name: Union[None, str], epochs: int,
                  train_csv_data: str, train_data_sep: Union[None, str],
                  input_col: str, target_col: str,
-                 tf_hub_models_config: str, verbose: bool, run_dir: str
+                 tf_hub_models_config: str, verbose: bool, run_dir: str,
+                 batch_size: int
                  ):
+        self.batch_size = batch_size
         self.run_dir = run_dir
         self.input_col = input_col
         self.train_data_sep = train_data_sep
@@ -61,7 +64,8 @@ class TrainPipeline:
             input_col=self.input_col,
             target_col=self.target_col,
             seed=seed,
-            verbose=True
+            verbose=True,
+            batch_size=self.batch_size
         )
 
         train_ds, test_ds, val_ds = data_utils.create_data_pipeline()
@@ -111,7 +115,11 @@ class TrainPipeline:
 
         bert_model.save(self.model_save_path, include_optimizer=False)
 
-        self._plot_graph(history)
+        try:
+            self._plot_graph(history)
+        except KeyError:
+            errors = traceback.format_exc()
+            print(errors)
 
         loss, accuracy = bert_model.evaluate(test_ds)
 
@@ -119,7 +127,8 @@ class TrainPipeline:
         print(f'Accuracy: {accuracy}')
         return self.model_save_path
 
-    def _plot_graph(self, history):
+    @staticmethod
+    def _plot_graph(history):
         history_dict = history.history
         print(history_dict.keys())
 
@@ -193,14 +202,15 @@ class TestPipeline:
 if __name__ == '__main__':
     train_utils = TrainPipeline(
         bert_model_name='bert_en_uncased_L-12_H-768_A-12',
-        epochs=1,
+        epochs=2,
         train_csv_data='dataset/train.csv',
         train_data_sep=',',
         input_col='Phrase',
         target_col='Sentiment',
         tf_hub_models_config='tf_hub_models.json',
         verbose=True,
-        run_dir='runs'
+        run_dir='runs',
+        batch_size=32
     )
     trained_model_path = train_utils.run()
 
