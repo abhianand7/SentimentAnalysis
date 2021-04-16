@@ -7,9 +7,11 @@ from typing import Union
 import os
 import pandas as pd
 from utils import read_csv_data
+from tensorflow.python.ops import array_ops
 
 tf.get_logger().setLevel('ERROR')
 # tf.data.experimental.CsvDataset()
+# tf.keras.preprocessing.text_dataset_from_directory
 
 
 class DataIngestion:
@@ -33,7 +35,8 @@ class DataIngestion:
         # target_values = np.asarray(target_feature.values).astype('int64').reshape((-1, 1))
         # target_values = to_categorical(target_feature.values, num_classes=5)
         target_values = target_feature.values
-        y_train = tf.constant(target_values)
+        y_train = array_ops.one_hot(target_values, 5)
+        # y_train = tf.constant(target_values)
 
         x_train = self.train_df.values
         x_train = tf.constant(x_train)

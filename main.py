@@ -5,6 +5,7 @@ import tensorflow_hub
 import tensorflow as tf
 from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.metrics import CategoricalAccuracy, AUC, Precision, Recall
 from official.nlp import optimization
 from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
@@ -103,9 +104,9 @@ class TrainPipeline:
                 optimizer = 'adam'
             loss = CategoricalCrossentropy(from_logits=False)
             metrics = []
-            acc_metrics = tf.metrics.Accuracy()
+            acc_metrics = CategoricalAccuracy()
             metrics.append(acc_metrics)
-            auc_metrics = tf.metrics.AUC()
+            auc_metrics = AUC()
             metrics.append(auc_metrics)
 
             bert_model.compile(
