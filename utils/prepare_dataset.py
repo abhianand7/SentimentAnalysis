@@ -31,9 +31,14 @@ class DataIngestion:
         no_train_elements = self.train_df.__len__()
 
         # target_values = np.asarray(target_feature.values).astype('int64').reshape((-1, 1))
-        target_values = to_categorical(target_feature.values, num_classes=5)
+        # target_values = to_categorical(target_feature.values, num_classes=5)
+        target_values = target_feature.values
+        y_train = tf.constant(target_values)
 
-        dataset = tf.data.Dataset.from_tensor_slices((self.train_df.values, target_values))
+        x_train = self.train_df.values
+        x_train = tf.constant(x_train)
+
+        dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 
         dataset = dataset.shuffle(buffer_size=no_train_elements, seed=self.seed)
 
@@ -97,10 +102,10 @@ if __name__ == '__main__':
             print(f'Review: {text_batch.numpy()[i]}')
             label = label_batch.numpy()[i]
             print(label)
-            # print(f'Label : {label} ({class_names[label]})')
+            print(f'Label : {label} ({class_names[label]})')
 
     for text_batch, label_batch in test.take(1):
         for i in range(1):
             print(f'Review: {text_batch.numpy()[i]}')
             label = label_batch.numpy()[i]
-            # print(f'Label : {label} ({class_names[label]})')
+            print(f'Label : {label} ({class_names[label]})')
