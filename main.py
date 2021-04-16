@@ -72,7 +72,11 @@ class TrainPipeline:
             num_classes=classes_len
         )
 
-        bert_model = model_utils.build_cls_model()
+        strategy = tf.distribute.MirroredStrategy()
+        print(f'Number of devices: {strategy.num_replicas_in_sync}')
+
+        with strategy.scope():
+            bert_model = model_utils.build_cls_model()
 
         steps_per_epoch = tf.data.experimental.cardinality(train_ds).numpy()
         num_train_steps = steps_per_epoch * self.epochs
