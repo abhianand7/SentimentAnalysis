@@ -252,7 +252,8 @@ class TestPipeline:
         if not os.path.exists(self.model_path):
             raise FileNotFoundError
 
-        self.model = tf.saved_model.load(self.model_path)
+        # self.model = tf.saved_model.load(self.model_path)
+        self.model = tf.keras.models.load_model(self.model_path)
         self.csv_utils = read_csv_data.CSVPipeline(
             file_path=test_file_path,
             verbose=True,
@@ -266,6 +267,7 @@ class TestPipeline:
 
         raw_x_inputs = df[self.input_col].values
         x_inputs = tf.constant(raw_x_inputs)
+        # x_inputs = tf.data.Dataset.from_tensor_slices((raw_x_inputs))
         predictions = self.model(x_inputs)
 
         self._print_sample_predictions(raw_x_inputs, predictions, 10)

@@ -44,7 +44,7 @@ class DataIngestion:
 
             target_values = target_feature.values
             y_train = array_ops.one_hot(target_values, num_classes)
-            y_train = tf.data.Dataset.from_tensor_slices(y_train)
+            y_train = tf.data.Dataset.from_tensor_slices((y_train))
 
         if self.verbose:
             if self.multi_output_flag:
@@ -52,7 +52,7 @@ class DataIngestion:
             else:
                 print(f'single target variable with {num_classes} categories in target variable')
         x_train = self.train_df[self.input_col].values
-        x_train = tf.data.Dataset.from_tensor_slices(tf.constant(x_train))
+        x_train = tf.data.Dataset.from_tensor_slices((tf.constant(x_train)))
 
         dataset = tf.data.Dataset.zip((x_train, y_train))
 
