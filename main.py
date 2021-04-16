@@ -6,8 +6,8 @@ import tensorflow as tf
 from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.metrics import CategoricalAccuracy, AUC, Precision, Recall
+from tensorflow.keras.callbacks import TerminateOnNaN, EarlyStopping
 from official.nlp import optimization
-from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
 from typing import Union
 # custom imports
@@ -102,12 +102,15 @@ class TrainPipeline:
                                                )
             else:
                 optimizer = 'adam'
+
+            # loss function for the model
             loss = CategoricalCrossentropy(from_logits=False)
-            metrics = []
-            acc_metrics = CategoricalAccuracy()
-            metrics.append(acc_metrics)
-            auc_metrics = AUC()
-            metrics.append(auc_metrics)
+
+            # metrics for evaluating model performance
+            metrics = self.get_metrics()
+
+            # callbacks for controlling the training properly
+            callbacks = self.get_callbacks()
 
             bert_model.compile(
                 optimizer=optimizer,
@@ -118,7 +121,8 @@ class TrainPipeline:
         history = bert_model.fit(
             x=train_ds,
             validation_data=val_ds,
-            epochs=self.epochs
+            epochs=self.epochs,
+            callbacks=callbacks
         )
 
         bert_model.save(self.model_save_path, include_optimizer=False)
@@ -135,6 +139,7 @@ class TrainPipeline:
         # print(f'Accuracy: {accuracy}')
         return self.model_save_path
 
+    @staticmethod
     def get_optimizer(self, optimizer: str, learning_rate: float, **kwargs):
         if optimizer == 'adam':
             optimizer = Adam(learning_rate=learning_rate)
@@ -146,6 +151,30 @@ class TrainPipeline:
                                                       num_warmup_steps=num_warmup_steps,
                                                       optimizer_type='adamw')
         return optimizer
+
+    @staticmethod
+    def get_callbacks():
+        callbacks = []
+        terminate_on_nan = TerminateOnNaN()
+        callbacks.append(terminate_on_nan)
+
+        early_stopping = EarlyStopping(monitor='loss', patience=3, verbose=1, mode='auto')
+        callbacks.append(early_stopping)
+
+        return early_stopping
+
+    @staticmethod
+    def get_metrics():
+        metrics = []
+        acc_metrics = CategoricalAccuracy()
+        metrics.append(acc_metrics)
+        auc_metrics = AUC()
+        metrics.append(auc_metrics)
+        precision = Precision(name='precision')
+        metrics.append(precision)
+        recall = Recall(name='recall')
+        metrics.append(recall)
+        return metrics
 
     @staticmethod
     def _plot_graph(history):
