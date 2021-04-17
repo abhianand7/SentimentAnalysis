@@ -311,22 +311,22 @@ if __name__ == '__main__':
     bert_model_name_var = args.bert_model
 
     # start training
-    # train_utils = TrainPipeline(
-    #     bert_model_name=bert_model_name_var,
-    #     epochs=epochs_no,
-    #     train_csv_data='dataset/train.csv',
-    #     train_data_sep=',',
-    #     input_col='Phrase',
-    #     target_col='Sentiment',
-    #     tf_hub_models_config='tf_hub_models.json',
-    #     verbose=True,
-    #     run_dir='runs',
-    #     batch_size=batch_size_var,
-    #     optimizer=optimizer_var
-    # )
-    # trained_model_path = train_utils.run()
+    train_utils = TrainPipeline(
+        bert_model_name=bert_model_name_var,
+        epochs=epochs_no,
+        train_csv_data='dataset/train.csv',
+        train_data_sep=',',
+        input_col='Phrase',
+        target_col='Sentiment',
+        tf_hub_models_config='tf_hub_models.json',
+        verbose=True,
+        run_dir='runs',
+        batch_size=batch_size_var,
+        optimizer=optimizer_var
+    )
+    trained_model_path = train_utils.run()
 
-    trained_model_path = 'runs/1618573162.0'
+    # trained_model_path = 'runs/1618573162.0'
 
     # start testing
     test_utils = TestPipeline(
