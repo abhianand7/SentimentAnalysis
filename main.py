@@ -3,13 +3,14 @@ import numpy as np
 import tensorflow_text
 import tensorflow_hub
 import tensorflow as tf
+from tensorflow import Tensor
 from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.metrics import CategoricalAccuracy, AUC, Precision, Recall
 from tensorflow.keras.callbacks import TerminateOnNaN, EarlyStopping
 from official.nlp import optimization
 import matplotlib.pyplot as plt
-from typing import Union
+from typing import Union, Any
 # custom imports
 from models import bert_classifier
 from utils import prepare_dataset
@@ -265,16 +266,16 @@ class TestPipeline:
     def run_test(self):
         df = self.csv_utils.return_df()
 
-        raw_x_inputs = df[self.input_col].values
+        raw_x_inputs = df[self.input_col].sample(n=10)
+        raw_x_inputs = raw_x_inputs.values
         x_inputs = tf.constant(raw_x_inputs)
-        # x_inputs = tf.data.Dataset.from_tensor_slices((raw_x_inputs))
-        predictions = self.model(x_inputs)
-
+        predictions = self.model.predict(x_inputs)
+        # print(predictions)
         self._print_sample_predictions(raw_x_inputs, predictions, 10)
         return predictions
 
     @staticmethod
-    def _print_sample_predictions(inputs, results, sample_size):
+    def _print_sample_predictions(inputs, results: np.ndarray, sample_size: int):
         """
 
         :param inputs:
@@ -282,8 +283,9 @@ class TestPipeline:
         :param sample_size:
         :return:
         """
+        results = results.tolist()
         result_for_printing = \
-            [f'input: {inputs[i]:<30} : score: {results[i][0]:.6f}'
+            [f'input: {inputs[i]} : score: {results[i][np.argmax(results[i])]} class: {np.argmax(results[i])}'
              for i in range(sample_size)]
         print(*result_for_printing, sep='\n')
         print()
@@ -309,22 +311,22 @@ if __name__ == '__main__':
     bert_model_name_var = args.bert_model
 
     # start training
-    train_utils = TrainPipeline(
-        bert_model_name=bert_model_name_var,
-        epochs=epochs_no,
-        train_csv_data='dataset/train.csv',
-        train_data_sep=',',
-        input_col='Phrase',
-        target_col='Sentiment',
-        tf_hub_models_config='tf_hub_models.json',
-        verbose=True,
-        run_dir='runs',
-        batch_size=batch_size_var,
-        optimizer=optimizer_var
-    )
-    trained_model_path = train_utils.run()
+    # train_utils = TrainPipeline(
+    #     bert_model_name=bert_model_name_var,
+    #     epochs=epochs_no,
+    #     train_csv_data='dataset/train.csv',
+    #     train_data_sep=',',
+    #     input_col='Phrase',
+    #     target_col='Sentiment',
+    #     tf_hub_models_config='tf_hub_models.json',
+    #     verbose=True,
+    #     run_dir='runs',
+    #     batch_size=batch_size_var,
+    #     optimizer=optimizer_var
+    # )
+    # trained_model_path = train_utils.run()
 
-    # trained_model_path = 'runs/1618573162.0'
+    trained_model_path = 'runs/1618573162.0'
 
     # start testing
     test_utils = TestPipeline(
